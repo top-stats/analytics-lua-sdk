@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+# Only the latest commit on a branch or PR needs checking; cancel superseded runs.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      # 5.1 is what Garry's Mod GLua descends from; 5.4 is what FiveM runs.
+      # Green on both is what makes the platform integrations safe.
+      matrix:
+        lua-version: ['5.1', '5.4']
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: ${{ matrix.lua-version }}
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install tooling
+        run: |
+          luarocks install busted
+          luarocks install dkjson
+          luarocks install luacheck
+
+      - name: Lint
+        run: luacheck src tests
+
+      - name: Test
+        run: busted tests
