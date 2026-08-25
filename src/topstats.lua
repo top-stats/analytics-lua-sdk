@@ -141,7 +141,8 @@ function TopStatsCore:track(name, properties, context)
         wire.properties = properties
     end
 
-    local ok, problem = put_string(wire, '_source', context.source or self.default_source, MAX_SOURCE_LENGTH)
+    local source = context.source or self.default_source
+    local ok, problem = put_string(wire, '_source', source, MAX_SOURCE_LENGTH)
 
     if ok then
         ok, problem = put_string(wire, '_actor', context.actor, MAX_ACTOR_LENGTH)
@@ -254,7 +255,10 @@ function TopStatsCore:retry_delay_ms(attempt, retry_after)
     -- Half the window is fixed and half is random. The rate limit is keyed
     -- on the client address, so servers behind one egress IP hit the same
     -- 429 together; without jitter they would retry in lockstep.
-    local ceiling = math.min(INITIAL_RETRY_DELAY_MS * (2 ^ math.min(attempt, 16)), MAX_RETRY_DELAY_MS)
+    local ceiling = math.min(
+        INITIAL_RETRY_DELAY_MS * (2 ^ math.min(attempt, 16)),
+        MAX_RETRY_DELAY_MS
+    )
     local half = ceiling / 2
     return math.floor(half + self.platform.random() * half)
 end
