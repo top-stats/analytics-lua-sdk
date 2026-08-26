@@ -304,10 +304,10 @@ describe('the TopStats Lua SDK', function()
         local platform = fake_platform()
         platform.getenv = nil
         local saved = os.getenv
-        os.getenv = nil ---@diagnostic disable-line
+        os.getenv = nil -- luacheck: ignore 122
 
         local core, problem = TopStats.new(platform, { api_key = API_KEY })
-        os.getenv = saved
+        os.getenv = saved -- luacheck: ignore 122
 
         assert.is_nil(problem)
         assert.is_not_nil(core)
