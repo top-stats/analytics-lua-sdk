@@ -300,6 +300,19 @@ describe('the TopStats Lua SDK', function()
         assert.equal('https://topstats.gg/v1/events', blank_env.requests[1].url)
     end)
 
+    it('starts on a runtime with no os.getenv at all', function()
+        local platform = fake_platform()
+        platform.getenv = nil
+        local saved = os.getenv
+        os.getenv = nil ---@diagnostic disable-line
+
+        local core, problem = TopStats.new(platform, { api_key = API_KEY })
+        os.getenv = saved
+
+        assert.is_nil(problem)
+        assert.is_not_nil(core)
+    end)
+
     it('refuses to start without an api key', function()
         local core, problem = TopStats.new(fake_platform(), { api_key = '   ' })
         assert.is_nil(core)

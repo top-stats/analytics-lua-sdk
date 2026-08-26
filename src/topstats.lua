@@ -59,13 +59,20 @@ function TopStatsCore.new(platform, options)
         return type(candidate) == 'string' and trim(candidate) ~= ''
     end
 
+    -- Guarded because sandboxed runtimes (GLua) strip os.getenv entirely.
     local getenv = platform.getenv or os.getenv
+    local env_host = nil
+
+    if getenv ~= nil then
+        env_host = getenv('TOPSTATS_HOST')
+    end
+
     local host = DEFAULT_HOST
 
     if usable_host(options.host) then
         host = trim(options.host):gsub('/+$', '')
-    elseif usable_host(getenv('TOPSTATS_HOST')) then
-        host = trim(getenv('TOPSTATS_HOST')):gsub('/+$', '')
+    elseif usable_host(env_host) then
+        host = trim(env_host):gsub('/+$', '')
     end
 
     local self = setmetatable({
